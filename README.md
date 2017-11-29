@@ -28,36 +28,35 @@ For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for i
 
 ### Running the Scripts
 
-1. Get all TV Archive identifiers from archive.org.
+1. Get all TV Archive identifiers from archive.org.  
 
-```
-python get_news_identifiers.py -o ../data/search.csv
-```
+    ```
+    python get_news_identifiers.py -o ../data/search.csv
+    ```
 
-2. Download metadata and HTML files for all the shows in the [sample input file](data/search-test.csv)
+2. Download metadata and HTML files for all the shows in the [sample input file](data/search-test.csv)  
 
-```
-python scrape_archive_org.py ../data/search-test.csv
-```
+    ```
+    python scrape_archive_org.py ../data/search-test.csv
+    ```
 
-This will create two directories `meta` and `html` by default in the same folder as where the script is. We have included the first [25 metadata](data/meta/) and first 25 [html files](data/html/). 
+    This will create two directories `meta` and `html` by default in the same folder as where the script is. We have included the first [25 metadata](data/meta/) and first 25 [html files](data/html/).  
 
-You can change the folder for `meta` by using the `--meta` flag. To change the directory for `html`, use the `--html` flag and specify the new directory. For instance,
+    You can change the folder for `meta` by using the `--meta` flag. To change the directory for `html`, use the `--html` flag and specify the new directory. For instance,  
 
-```
-python scrape_archive_org.py --meta meta-foxnews --html html-foxnews ../data/search-test.csv
-```
+    ```
+    python scrape_archive_org.py --meta meta-foxnews --html html-foxnews ../data/search-test.csv
+    ```
 
-Use `-c/--compress` option to store and parse the downloaded files in compression format (GZip).
+    Use `-c/--compress` option to store and parse the downloaded files in compression format (GZip).
 
 3. Parse and extract meta fields and text from [sample metadata](data/meta) and [HTML files](data/html). 
 
-```
-python parse_archive.py ../data/search-test.csv
-```
+    ```
+    python parse_archive.py ../data/search-test.csv
+    ```
 
-A [sample output file](data/archive-out.csv).
-
+    A [sample output file](data/archive-out.csv).
 
 ### License
 
