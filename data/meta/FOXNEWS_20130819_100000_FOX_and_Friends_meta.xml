@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <identifier>FOXNEWS_20130819_100000_FOX_and_Friends</identifier>
+  <mediatype>movies</mediatype>
+  <contributor>FOXNEWS</contributor>
+  <sound>sound</sound>
+  <color>color</color>
+  <title>FOX and Friends : FOXNEWS : August 19, 2013 6:00am-9:00am EDT</title>
+  <imagecount>10800</imagecount>
+  <runtime>03:00:00</runtime>
+  <date>2013-08-19</date>
+  <year>2013</year>
+  <start_time>2013-08-19 10:00:00</start_time>
+  <stop_time>2013-08-19 13:00:00</stop_time>
+  <utc_offset>-400</utc_offset>
+  <start_localtime>2013-08-19 06:00:00</start_localtime>
+  <frames_per_second>29.97</frames_per_second>
+  <audio_codec>mp2</audio_codec>
+  <video_codec>mpeg2video</video_codec>
+  <audio_sample_rate>48000</audio_sample_rate>
+  <source_pixel_width>720</source_pixel_width>
+  <source_pixel_height>480</source_pixel_height>
+  <aspect_ratio>4:3</aspect_ratio>
+  <uploader>tv@archive.org</uploader>
+  <sponsor>Internet Archive</sponsor>
+  <identifier-access>http://archive.org/details/FOXNEWS_20130819_100000_FOX_and_Friends</identifier-access>
+  <scandate>20130819100000</scandate>
+  <publicdate>2013-08-19 10:00:00</publicdate>
+  <collection>TV-FOXNEWS</collection>
+  <collection>tvarchive</collection>
+  <collection>tvnews</collection>
+  <subject>FOX and Friends</subject>
+  <subject>Television Program</subject>
+  <description>News/Business. Steve Doocy, Gretchen Carlson, Brian Kilmeade. News, features and interviews. New.</description>
+  <source>Comcast Cable</source>
+  <tuner>Port 1236</tuner>
+  <scanningcenter>Annapolis, MD, USA</scanningcenter>
+  <previous_item>FOXNEWS_20130819_090000_FOX_and_Friends_First</previous_item>
+  <next_item>FOXNEWS_20130819_130000_Americas_Newsroom</next_item>
+  <closed_captioning>no</closed_captioning>
+  <ccnum>0</ccnum>
+  <backup_location>ia905705_5</backup_location>
+</metadata>
