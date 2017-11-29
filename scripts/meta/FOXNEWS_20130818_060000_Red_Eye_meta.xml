@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <identifier>FOXNEWS_20130818_060000_Red_Eye</identifier>
+  <mediatype>movies</mediatype>
+  <contributor>FOXNEWS</contributor>
+  <sound>sound</sound>
+  <color>color</color>
+  <title>Red Eye : FOXNEWS : August 18, 2013 2:00am-3:00am EDT</title>
+  <imagecount>3601</imagecount>
+  <runtime>01:00:00</runtime>
+  <date>2013-08-18</date>
+  <year>2013</year>
+  <start_time>2013-08-18 06:00:00</start_time>
+  <stop_time>2013-08-18 07:00:01</stop_time>
+  <utc_offset>-400</utc_offset>
+  <start_localtime>2013-08-18 02:00:00</start_localtime>
+  <frames_per_second>29.97</frames_per_second>
+  <audio_codec>mp2</audio_codec>
+  <video_codec>mpeg2video</video_codec>
+  <audio_sample_rate>48000</audio_sample_rate>
+  <source_pixel_width>720</source_pixel_width>
+  <source_pixel_height>480</source_pixel_height>
+  <aspect_ratio>4:3</aspect_ratio>
+  <uploader>tv@archive.org</uploader>
+  <sponsor>Internet Archive</sponsor>
+  <identifier-access>http://archive.org/details/FOXNEWS_20130818_060000_Red_Eye</identifier-access>
+  <scandate>20130818060000</scandate>
+  <publicdate>2013-08-18 06:00:00</publicdate>
+  <collection>TV-FOXNEWS</collection>
+  <collection>tvarchive</collection>
+  <collection>tvnews</collection>
+  <subject>Red Eye</subject>
+  <subject>Television Program</subject>
+  <description>News/Business. Discussing the day's hottest topics.</description>
+  <source>Comcast Cable</source>
+  <tuner>Port 1236</tuner>
+  <scanningcenter>Annapolis, MD, USA</scanningcenter>
+  <previous_item>FOXNEWS_20130818_050000_Geraldo_at_Large</previous_item>
+  <next_item>FOXNEWS_20130818_070000_Huckabee</next_item>
+  <closed_captioning>no</closed_captioning>
+  <ccnum>0</ccnum>
+  <backup_location>ia905705_3</backup_location>
+</metadata>
