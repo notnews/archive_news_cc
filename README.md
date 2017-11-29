@@ -14,13 +14,16 @@ For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for i
 
 ### Scripts
 
-1. [Get Identifiers For Each Show (Channel, Show, Date, Time)](scripts/get_news_identifiers.py)
+1. **Get Show Identifiers**  
+    - [Get Identifiers For Each Show (Channel, Show, Date, Time)](scripts/get_news_identifiers.py)
     - Produces [data/search.csv](data/search.csv)
 
-2. [Download the Metadata and HTML Files](scripts/scrape_archive_org.py)
+2. **Download Metadata and HTML Files**  
+    - [Download the Metadata and HTML Files](scripts/scrape_archive_org.py)
     - Saves the metadata and HTML files to two separate folders specified in `--meta` and `--html` respectively. The default folder names are `meta` and `html` respectively.
 
-3. [Parses metadata and HTML Files and Saves to a CSV](scripts/parse_archive.py)
+3. **Parse Metadata and HTML Files**  
+    - [Parses metadata and HTML Files and Saves to a CSV](scripts/parse_archive.py)
     - Produces a CSV. [Here's an example](data/archive-out.csv)
 
 ### Running the Scripts
@@ -47,13 +50,14 @@ python scrape_archive_org.py --meta meta-foxnews --html html-foxnews ../data/sea
 
 Use `-c/--compress` option to store and parse the downloaded files in compression format (GZip).
 
-3. Parse and extract meta fields and text from [sample metadata](data/meta) and HTML files. 
-
-[Sample output file](data/archive-out.csv)
+3. Parse and extract meta fields and text from [sample metadata](data/meta) and [HTML files](data/html). 
 
 ```
 python parse_archive.py ../data/search-test.csv
 ```
+
+A [sample output file](data/archive-out.csv).
+
 
 ### License
 
