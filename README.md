@@ -3,7 +3,7 @@
 
 ### Data
 
-The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. 
+The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. To learn more about how to download the files from Google Storage, click [here](https://cloud.google.com/storage/docs/requester-pays).
 
 There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
 
