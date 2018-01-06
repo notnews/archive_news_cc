@@ -1,22 +1,11 @@
 ## Download Closed Captions of News Videos from Archive.org
 
+The repository provides scripts for downloading the data, and link to two datasets that were built using the scripts:
 
-### Data
+* [Scripts](https://github.com/notnews/archive_news_cc#downloading-the-data-from-archiveorg)
+* [Data](https://github.com/notnews/archive_news_cc#data)
 
-The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. To learn more about how to download the files from Google Storage, click [here](https://cloud.google.com/storage/docs/requester-pays).
-
-There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
-
-**500k Dataset from 2014**
-
-* [CSV (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
-* [HTML (~ 10.4 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
-
-**860k Dataset from 2017**
-
-* [CSV (~ 10.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
-* [HTML (~ 20.2 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
-* [Meta (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
+-------------
 
 ### Downloading the Data from Archive.org
 
@@ -32,7 +21,7 @@ There are three steps to downloading the transcripts:
 
 For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for identifier `CSPAN_20090604_230000` And from http://archive.org/download/CSPAN_20090604_230000/CSPAN_20090604_230000_meta.xml, we read the link http://archive.org/details/CSPAN_20090604_230000, from which we get the text from HTML file. We also store the meta data from the META XML file.
 
-### Scripts
+#### Scripts
 
 1. **Get Show Identifiers**  
     - [Get Identifiers For Each Show (Channel, Show, Date, Time)](scripts/get_news_identifiers.py)
@@ -46,7 +35,7 @@ For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for i
     - [Parses metadata and HTML Files and Saves to a CSV](scripts/parse_archive.py)
     - Produces a CSV. [Here's an example](data/archive-out.csv)
 
-### Running the Scripts
+#### Running the Scripts
 
 1. Get all TV Archive identifiers from archive.org.  
 
@@ -77,6 +66,23 @@ For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for i
     ```
 
     A [sample output file](data/archive-out.csv).
+
+### Data
+
+The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. To learn more about how to download the files from Google Storage, click [here](https://cloud.google.com/storage/docs/requester-pays).
+
+There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
+
+**500k Dataset from 2014**
+
+* [CSV (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
+* [HTML (~ 10.4 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
+
+**860k Dataset from 2017**
+
+* [CSV (~ 10.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
+* [HTML (~ 20.2 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
+* [Meta (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
 
 ### License
 
