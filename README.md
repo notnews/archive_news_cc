@@ -7,16 +7,16 @@ The data are hosted on Google Cloud Storage. It is setup such that the requestor
 
 There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
 
-**500k Dataset**
+**500k Dataset from 2014**
 
-* [CSV](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
-* [HTML](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
+* [CSV (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
+* [HTML (~ 10.4 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
 
-**860k Dataset**
+**860k Dataset from 2017**
 
-* [CSV](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
-* [HTML](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
-* [Meta](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
+* [CSV (~ 10.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
+* [HTML (~ 20.2 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
+* [Meta (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
 
 ### Downloading the Data from Archive.org
 
