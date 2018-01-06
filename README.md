@@ -1,16 +1,24 @@
 ## Download Closed Captions of News Videos from Archive.org
 
-------------
 
-### Final Dataset
+### Data
 
-We are providing the dataset via Google Cloud Storage (the requestor pays):
+The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. 
+
+There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
+
+**500k Dataset**
+
+* [CSV](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
+* [HTML](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
+
+**860k Dataset**
 
 * [CSV](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
 * [HTML](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
 * [Meta](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
 
---------------
+### Downloading the Data from Archive.org
 
 Download closed caption transcripts of nearly 1.3M news shows from [http://archive.org](http://archive.org). 
 
