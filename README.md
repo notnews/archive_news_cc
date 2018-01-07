@@ -1,4 +1,4 @@
-## Download Closed Captions of News Videos from Archive.org
+## Closed Captions of News Videos from Archive.org
 
 The repository provides scripts for downloading the data, and link to two datasets that were built using the scripts:
 
