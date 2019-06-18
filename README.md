@@ -75,7 +75,7 @@ There are two separate datasets, one with ~ 500k and another with about 860k new
 
 **500k Dataset from 2014**
 
-* [CSV (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.7z)
+* [CSV (~ 2.7 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.xz)
 * [HTML (~ 10.4 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
 
 **860k Dataset from 2017**
