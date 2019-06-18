@@ -109,10 +109,13 @@ if __name__ == "__main__":
             p.StartElementHandler = start_element
             p.EndElementHandler = end_element
             p.CharacterDataHandler = char_data
-            p.Parse(xmlstr)
-            #for t in parsed_data:
-            #    parsed_data[t] = '|'.join(parsed_data[t])
-            columns.update(list(parsed_data))
+            try:
+                p.Parse(xmlstr)
+                #for t in parsed_data:
+                #    parsed_data[t] = '|'.join(parsed_data[t])
+                columns.update(list(parsed_data))
+            except:
+                print("WARN: Cannot parse {0}".format(file_name))
     f.close()
 
     print("Total: {:d}, Meta fields count: {:d}".format(count, len(columns)))
@@ -172,9 +175,13 @@ if __name__ == "__main__":
             p.StartElementHandler = start_element
             p.EndElementHandler = end_element
             p.CharacterDataHandler = char_data
-            p.Parse(xmlstr)
-            for t in parsed_data:
-                parsed_data[t] = '|'.join(parsed_data[t]).encode('utf-8')
+            try:
+                p.Parse(xmlstr)
+                for t in parsed_data:
+                    parsed_data[t] = '|'.join(parsed_data[t]).encode('utf-8')
+            except:
+                print("WARN: Cannot parse '{0}'".format(file_name))
+                continue
 
             # Parse HTML file for closed-caption
             file_name = os.path.join(options.html, _id + ".html")
