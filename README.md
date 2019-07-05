@@ -87,3 +87,12 @@ There are two separate datasets, one with ~ 500k and another with about 860k new
 ### License
 
 We are releasing the scripts under the [MIT License](https://opensource.org/licenses/MIT).
+
+### Suggested Citation
+
+Please credit Internet Archive for the data. 
+
+If you wanted to refer to this particular corpus so that the research is reproducible, you can cite it as:
+```
+archive.org TV News Closed Caption Corpus. Laohaprapanon, Suriyan and Gaurav Sood. 2017. https://github.com/notnews/archive_news_cc/     
+```
