@@ -13,6 +13,7 @@ def validate_date(date):
         assert 32 > int(d[2]) > 0
     except Exception as e:
         raise Exception("Invalid date")
+        
 
 if __name__ == "__main__":
     desc = 'Get TV archive identifiers from Archive.org'
