@@ -8,7 +8,7 @@ import optparse
 import pandas as pd
 
 import gzip
-import time
+#import time
 #import xml.parsers.expat
 
 import requests
@@ -16,6 +16,7 @@ import requests
 #from bs4 import BeautifulSoup
 import concurrent.futures
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(message)s',
@@ -24,7 +25,7 @@ logging.basicConfig(level=logging.INFO,
 
 META_DIR = 'data/meta/'
 HTML_DIR = 'data/html/'
-MAX_WORKERS = 7
+MAX_WORKERS = os.environ.get("MAX_WORKERS", 3)
 
 __version__ = 'r5 (2022/10/28)'
 
@@ -66,39 +67,38 @@ def download_file(options, url, local_filename):
     f.close()
 
 
+def handle_download(_id):
+    _id = _id[0]
+    file_name = os.path.join(options.meta, _id + "_meta.xml")
+
+    if options.compress:
+        file_name += ".gz"
+
+    if not os.path.isfile(file_name):
+        try:
+            rq = requests.get('http://archive.org/download/' + _id)
+            if rq.status_code == 200:
+
+                if not rq.url.endswith('/'):
+                    rq.url = rq.url + '/'
+                download_file(options, rq.url + _id + "_meta.xml", file_name)
+
+        except Exception as e:
+            logging.warning("{!s}".format(e))
+            #time.sleep(60)
+
+    url = 'http://archive.org/details/' + _id
+    file_name = os.path.join(options.html, _id + ".html")
+
+    if options.compress:
+        file_name += ".gz"
+    if not os.path.isfile(file_name):
+        download_file(options, url, file_name)
+
 def parallel_download(identifiers):
-
-    def this_download(_id):
-        _id = _id[0]
-        file_name = os.path.join(options.meta, _id + "_meta.xml")
-
-        if options.compress:
-            file_name += ".gz"
-
-        if not os.path.isfile(file_name):
-            try:
-                rq = requests.get('http://archive.org/download/' + _id)
-                if rq.status_code == 200:
-
-                    if not rq.url.endswith('/'):
-                        rq.url = rq.url + '/'
-                    download_file(options, rq.url + _id + "_meta.xml", file_name)
-
-            except Exception as e:
-                logging.warning("{!s}".format(e))
-                time.sleep(60)
-
-        url = 'http://archive.org/details/' + _id
-        file_name = os.path.join(options.html, _id + ".html")
-
-        if options.compress:
-            file_name += ".gz"
-        if not os.path.isfile(file_name):
-            download_file(options, url, file_name)
-
-
+    logging.info(f'Starting download, max workers: {MAX_WORKERS}')
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for r in executor.map(this_download, identifiers):
+        for r in executor.map(handle_download, identifiers):
             if r:
                 logging.warning(r)
 
@@ -125,4 +125,4 @@ if __name__ == "__main__":
     
     parallel_download(identifiers)
     
-    # logging.info("Total: {0:d}".format(count))
+    logging.info("All done")
