@@ -27,10 +27,10 @@ __version__ = 'r5 (2022/10/28)'
 
 META_DIR = 'data/meta/'
 HTML_DIR = 'data/html/'
-# try:
-#     MAX_WORKERS = int(os.environ["MAX_WORKERS"])
-# except:
-#     MAX_WORKERS = 3
+try:
+    MAX_WORKERS = int(os.environ["MAX_WORKERS"])
+except:
+    MAX_WORKERS = 3
 
 
 def parse_command_line(argv):
@@ -107,7 +107,7 @@ def parallel_download(identifiers):
 
 if __name__ == "__main__":
     logging.info("{:s} - {:s}\n".format(os.path.basename(sys.argv[0]), __version__))
-    #logging.info(f'Max workers set to {MAX_WORKERS}')
+    logging.info(f'Max workers set to {MAX_WORKERS}')
 
     (options, args) = parse_command_line(sys.argv)
     if len(args) < 2:
