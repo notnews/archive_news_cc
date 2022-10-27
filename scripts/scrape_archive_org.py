@@ -27,10 +27,10 @@ __version__ = 'r5 (2022/10/28)'
 
 META_DIR = 'data/meta/'
 HTML_DIR = 'data/html/'
-try:
-    MAX_WORKERS = int(os.environ["MAX_WORKERS"])
-except:
-    MAX_WORKERS = 3
+# try:
+#     MAX_WORKERS = int(os.environ["MAX_WORKERS"])
+# except:
+#     MAX_WORKERS = 3
 
 
 def parse_command_line(argv):
@@ -99,8 +99,8 @@ def handle_download(_id):
         download_file(options, url, file_name)
 
 def parallel_download(identifiers):
-    logging.info(f'Starting download, max workers: {MAX_WORKERS}')
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #logging.info(f'Starting download, max workers: {MAX_WORKERS}')
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for r in executor.map(handle_download, identifiers):
             if r:
                 logging.warning(r)
