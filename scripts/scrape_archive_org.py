@@ -4,20 +4,29 @@
 import os
 import sys
 import optparse
-import csv
+#import csv
+import pandas as pd
 
 import gzip
 import time
-import xml.parsers.expat
+#import xml.parsers.expat
 
 import requests
 
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
+import concurrent.futures
+import logging
 
-META_DIR = './meta/'
-HTML_DIR = './html/'
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(message)s',
+                    handlers=[logging.FileHandler("logs/scrape_archive_org.log"),
+                              logging.StreamHandler()])
 
-__version__ = 'r4 (2017/11/28)'
+META_DIR = 'data/meta/'
+HTML_DIR = 'data/html/'
+MAX_WORKERS = 7
+
+__version__ = 'r5 (2022/10/28)'
 
 
 def parse_command_line(argv):
@@ -44,7 +53,7 @@ def parse_command_line(argv):
 
 def download_file(options, url, local_filename):
     # NOTE the stream=True parameter
-    print("Downloading...[{:s}]".format(url))
+    logging.info("Downloading...[{:s}]".format(url))
     r = requests.get(url, stream=True)
     if options.compress:
         f = gzip.open(local_filename, 'wb')
@@ -57,12 +66,48 @@ def download_file(options, url, local_filename):
     f.close()
 
 
-if __name__ == "__main__":
+def parallel_download(identifiers):
 
-    print("{:s} - {:s}\n".format(os.path.basename(sys.argv[0]), __version__))
+    def this_download(_id):
+        _id = _id[0]
+        file_name = os.path.join(options.meta, _id + "_meta.xml")
+
+        if options.compress:
+            file_name += ".gz"
+
+        if not os.path.isfile(file_name):
+            try:
+                rq = requests.get('http://archive.org/download/' + _id)
+                if rq.status_code == 200:
+
+                    if not rq.url.endswith('/'):
+                        rq.url = rq.url + '/'
+                    download_file(options, rq.url + _id + "_meta.xml", file_name)
+
+            except Exception as e:
+                logging.warning("{!s}".format(e))
+                time.sleep(60)
+
+        url = 'http://archive.org/details/' + _id
+        file_name = os.path.join(options.html, _id + ".html")
+
+        if options.compress:
+            file_name += ".gz"
+        if not os.path.isfile(file_name):
+            download_file(options, url, file_name)
+
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        for r in executor.map(this_download, identifiers):
+            if r:
+                logging.warning(r)
+
+
+if __name__ == "__main__":
+    logging.info("{:s} - {:s}\n".format(os.path.basename(sys.argv[0]), __version__))
     (options, args) = parse_command_line(sys.argv)
     if len(args) < 2:
-        print("Usage: {:s} [options] <CSV input file>".format(os.path.basename(sys.argv[0])))
+        logging.info("Usage: {:s} [options] <CSV input file>".format(os.path.basename(sys.argv[0])))
         sys.exit(-1)
 
     if not os.path.exists(options.meta):
@@ -71,36 +116,13 @@ if __name__ == "__main__":
     if not os.path.exists(options.html):
         os.mkdir(options.html)
 
-    count = 0
-    f = open(args[1])
-    reader = csv.DictReader(f)
-    for i, r in enumerate(reader):
-        if i < options.skip:
-            continue
-        count += 1
-        _id = r['identifier']
-        print('#{:d}: {:s}'.format(count, _id))
-        file_name = os.path.join(options.meta, _id + "_meta.xml")
-        if options.compress:
-            file_name += ".gz"
-        if not os.path.isfile(file_name):
-            try:
-                rq = requests.get('http://archive.org/download/' + _id)
-                if rq.status_code == 200:
-                    #print(rq.url)
-                    if not rq.url.endswith('/'):
-                        rq.url = rq.url + '/'
-                    download_file(options, rq.url + _id + "_meta.xml", file_name)
-            except Exception as e:
-                print("WARN: {!s}".format(e))
-                time.sleep(60)
-        url = 'http://archive.org/details/' + _id
-        file_name = os.path.join(options.html, _id + ".html")
-        if options.compress:
-            file_name += ".gz"
-        if not os.path.isfile(file_name):
-            download_file(options, url, file_name)
+    # CSV to list
+    df = pd.read_csv(args[1])
+    identifiers = [list(row) for row in df.values]
 
-    f.close()
-
-    print("Total: {0:d}".format(count))
+    if options.skip:
+        identifiers = identifiers[options.skip:]
+    
+    parallel_download(identifiers)
+    
+    # logging.info("Total: {0:d}".format(count))
