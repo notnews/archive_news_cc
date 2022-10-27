@@ -32,7 +32,7 @@ try:
 except:
     MAX_WORKERS = 3
 
-logging.warning(f'Max workers set toto {MAX_WORKERS}')
+logging.warning(f'Max workers set to {MAX_WORKERS}')
 
 
 def parse_command_line(argv):
