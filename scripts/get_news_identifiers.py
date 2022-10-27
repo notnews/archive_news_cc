@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-n', dest='count', default=1500000,
                         help='Limit number of identifiers (default: 1,500,000)')
-    parser.add_argument('-o', '--output', default='search.csv',
+    parser.add_argument('-o', '--output', default='data/search.csv',
                         help='Output file name')
     parser.add_argument('-sd', dest='start_date', default='',
                         help='Starting date filter in YYYY-MM-DD format')
