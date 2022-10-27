@@ -99,7 +99,6 @@ def handle_download(_id):
         download_file(options, url, file_name)
 
 def parallel_download(identifiers):
-    #logging.info(f'Starting download, max workers: {MAX_WORKERS}')
     with concurrent.futures.ThreadPoolExecutor() as executor:
         for r in executor.map(handle_download, identifiers):
             if r:
@@ -108,7 +107,7 @@ def parallel_download(identifiers):
 
 if __name__ == "__main__":
     logging.info("{:s} - {:s}\n".format(os.path.basename(sys.argv[0]), __version__))
-    logging.info(f'Max workers set to {MAX_WORKERS}')
+    #logging.info(f'Max workers set to {MAX_WORKERS}')
 
     (options, args) = parse_command_line(sys.argv)
     if len(args) < 2:
