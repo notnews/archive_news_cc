@@ -23,11 +23,16 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[logging.FileHandler("logs/scrape_archive_org.log"),
                               logging.StreamHandler()])
 
+__version__ = 'r5 (2022/10/28)'
+
 META_DIR = 'data/meta/'
 HTML_DIR = 'data/html/'
-MAX_WORKERS = os.environ.get("MAX_WORKERS", 3)
+try:
+    MAX_WORKERS = int(os.environ["MAX_WORKERS"])
+except:
+    MAX_WORKERS = 3
 
-__version__ = 'r5 (2022/10/28)'
+logging.warning(f'Max workers set toto {MAX_WORKERS}')
 
 
 def parse_command_line(argv):
