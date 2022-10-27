@@ -32,8 +32,6 @@ try:
 except:
     MAX_WORKERS = 3
 
-logging.warning(f'Max workers set to {MAX_WORKERS}')
-
 
 def parse_command_line(argv):
     """Command line options parser for the script
@@ -110,6 +108,8 @@ def parallel_download(identifiers):
 
 if __name__ == "__main__":
     logging.info("{:s} - {:s}\n".format(os.path.basename(sys.argv[0]), __version__))
+    logging.info(f'Max workers set to {MAX_WORKERS}')
+
     (options, args) = parse_command_line(sys.argv)
     if len(args) < 2:
         logging.info("Usage: {:s} [options] <CSV input file>".format(os.path.basename(sys.argv[0])))
@@ -125,9 +125,11 @@ if __name__ == "__main__":
     df = pd.read_csv(args[1])
     identifiers = [list(row) for row in df.values]
 
+    # Consider skip option
     if options.skip:
         identifiers = identifiers[options.skip:]
     
+    # Download
     parallel_download(identifiers)
     
     logging.info("All done")
