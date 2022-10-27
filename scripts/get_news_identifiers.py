@@ -3,6 +3,12 @@
 
 import argparse
 import requests
+import logging 
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s %(message)s',
+                    handlers=[logging.FileHandler("logs/get_new_identifiers.log"),
+                              logging.StreamHandler()])
 
 def validate_date(date):
     # Simple date validation
@@ -28,7 +34,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    print("Search and download TV archive identifiers, please wait...")
+    logging.info("Search and download TV archive identifiers, please wait...")
 
     # Initial query
     query = 'collection:"tvarchive"'
@@ -56,6 +62,6 @@ if __name__ == "__main__":
         with open(args.output, 'wb') as f:
             for data in r.iter_content(chunk_size):
                 f.write(data)
-        print("Done")
+        logging.info("Done")
     else:
-        print("ERROR: status_code={0:d}".format(r.status_code))
+        logging.error("status_code={0:d}".format(r.status_code))
