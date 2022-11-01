@@ -32,8 +32,6 @@ try:
 except:
     MAX_WORKERS = 3
 
-# Wait params
-WAIT_TIME = 120
 
 def parse_command_line(argv):
     """Command line options parser for the script
@@ -72,7 +70,7 @@ def download_file(options, url, local_filename):
     f.close()
 
 
-def handle_download(_id):
+def handle_download(_id, retry=0):
     try:
         _id = _id[0]
         file_name = os.path.join(options.meta, _id + "_meta.xml")
@@ -96,16 +94,22 @@ def handle_download(_id):
         if not os.path.isfile(file_name):
             download_file(options, url, file_name)
     except:
-        logging.warning(f'id: {id_}. Waiting {WAIT_TIME} secs')
-        time.sleep(WAIT_TIME)
-        handle_download(_id)
+        if retry > 4:
+            logging.error(f'id: {_id}. Stopped retrying')
+
+        else:
+            retry += 1
+            wait_time = 120
+            logging.warning(f'id: {_id}. Waiting {wait_time} secs and retrying... ')
+            time.sleep(wait_time)
+            handle_download(_id, retry=retry)
 
 
-# def parallel_download(identifiers):
-#     with concurrent.futures.ThreadPoolExecutor() as executor:
-#         for r in executor.map(handle_download, identifiers):
-#             if r:
-#                 logging.warning(r)
+def parallel_download(identifiers):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for r in executor.map(handle_download, identifiers):
+            if r:
+                logging.warning(r)
 
 
 if __name__ == "__main__":
@@ -131,10 +135,7 @@ if __name__ == "__main__":
     if options.skip:
         identifiers = identifiers[options.skip:]
     
-    # # Download
-    # parallel_download(identifiers)
-
-    for id_ in identifiers:
-        handle_download(id_)
+    # Download
+    parallel_download(identifiers)
     
     logging.info("All done")
