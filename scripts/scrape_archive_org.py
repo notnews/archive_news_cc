@@ -32,9 +32,6 @@ try:
 except:
     MAX_WORKERS = 3
 
-# Wait params
-WAIT_TIME = 120
-WAIT_BOOL = False
 
 
 def parse_command_line(argv):
@@ -75,11 +72,6 @@ def download_file(options, url, local_filename):
 
 
 def handle_download(_id):
-    # Check if needs waiting
-    if WAIT_BOOL:
-        time.sleep(WAIT_TIME)
-        WAIT_BOOL = False
-
     try:
         _id = _id[0]
         file_name = os.path.join(options.meta, _id + "_meta.xml")
@@ -103,16 +95,15 @@ def handle_download(_id):
         if not os.path.isfile(file_name):
             download_file(options, url, file_name)
     except:
-        # Retry with wait
-        WAIT_BOOL = True
+        time.sleep(WAIT_TIME)
         handle_download(_id)
 
 
-def parallel_download(identifiers):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for r in executor.map(handle_download, identifiers):
-            if r:
-                logging.warning(r)
+# def parallel_download(identifiers):
+#     with concurrent.futures.ThreadPoolExecutor() as executor:
+#         for r in executor.map(handle_download, identifiers):
+#             if r:
+#                 logging.warning(r)
 
 
 if __name__ == "__main__":
@@ -138,7 +129,10 @@ if __name__ == "__main__":
     if options.skip:
         identifiers = identifiers[options.skip:]
     
-    # Download
-    parallel_download(identifiers)
+    # # Download
+    # parallel_download(identifiers)
+
+    for id_ in identifiers:
+        handle_download(id_)
     
     logging.info("All done")
