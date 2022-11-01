@@ -32,7 +32,8 @@ try:
 except:
     MAX_WORKERS = 3
 
-
+# Wait params
+WAIT_TIME = 120
 
 def parse_command_line(argv):
     """Command line options parser for the script
