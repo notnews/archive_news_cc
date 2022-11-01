@@ -59,7 +59,7 @@ def parse_command_line(argv):
 
 def download_file(options, url, local_filename):
     # NOTE the stream=True parameter
-    logging.debug("Downloading...[{:s}]".format(url))
+    logging.info("Downloading...[{:s}]".format(url))
     r = requests.get(url, stream=True)
     if options.compress:
         f = gzip.open(local_filename, 'wb')
