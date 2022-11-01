@@ -59,7 +59,7 @@ def parse_command_line(argv):
 
 def download_file(options, url, local_filename):
     # NOTE the stream=True parameter
-    logging.info("Downloading...[{:s}]".format(url))
+    logging.debug("Downloading...[{:s}]".format(url))
     r = requests.get(url, stream=True)
     if options.compress:
         f = gzip.open(local_filename, 'wb')
@@ -96,6 +96,7 @@ def handle_download(_id):
         if not os.path.isfile(file_name):
             download_file(options, url, file_name)
     except:
+        logging.warning(f'id: {id_}. Waiting {WAIT_TIME} secs')
         time.sleep(WAIT_TIME)
         handle_download(_id)
 
