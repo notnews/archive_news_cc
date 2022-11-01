@@ -8,7 +8,7 @@ import optparse
 import pandas as pd
 
 import gzip
-#import time
+import time
 #import xml.parsers.expat
 
 import requests
@@ -31,6 +31,10 @@ try:
     MAX_WORKERS = int(os.environ["MAX_WORKERS"])
 except:
     MAX_WORKERS = 3
+
+# Wait params
+WAIT_TIME = 120
+WAIT_BOOL = False
 
 
 def parse_command_line(argv):
@@ -71,14 +75,19 @@ def download_file(options, url, local_filename):
 
 
 def handle_download(_id):
-    _id = _id[0]
-    file_name = os.path.join(options.meta, _id + "_meta.xml")
+    # Check if needs waiting
+    if WAIT_BOOL:
+        time.sleep(WAIT_TIME)
+        WAIT_BOOL = False
 
-    if options.compress:
-        file_name += ".gz"
+    try:
+        _id = _id[0]
+        file_name = os.path.join(options.meta, _id + "_meta.xml")
 
-    if not os.path.isfile(file_name):
-        try:
+        if options.compress:
+            file_name += ".gz"
+
+        if not os.path.isfile(file_name):
             rq = requests.get('http://archive.org/download/' + _id)
             if rq.status_code == 200:
 
@@ -86,17 +95,18 @@ def handle_download(_id):
                     rq.url = rq.url + '/'
                 download_file(options, rq.url + _id + "_meta.xml", file_name)
 
-        except Exception as e:
-            logging.warning("{!s}".format(e))
-            #time.sleep(60)
+        url = 'http://archive.org/details/' + _id
+        file_name = os.path.join(options.html, _id + ".html")
 
-    url = 'http://archive.org/details/' + _id
-    file_name = os.path.join(options.html, _id + ".html")
+        if options.compress:
+            file_name += ".gz"
+        if not os.path.isfile(file_name):
+            download_file(options, url, file_name)
+    except:
+        # Retry with wait
+        WAIT_BOOL = True
+        handle_download(_id)
 
-    if options.compress:
-        file_name += ".gz"
-    if not os.path.isfile(file_name):
-        download_file(options, url, file_name)
 
 def parallel_download(identifiers):
     with concurrent.futures.ThreadPoolExecutor() as executor:
