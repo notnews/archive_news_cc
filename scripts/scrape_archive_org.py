@@ -58,11 +58,13 @@ def parse_command_line(argv):
 def download_file(options, url, local_filename):
     # NOTE the stream=True parameter
     logging.info("Downloading...[{:s}]".format(url))
+
     r = requests.get(url, stream=True)
     if options.compress:
         f = gzip.open(local_filename, 'wb')
     else:
         f = open(local_filename, 'wb')
+
     for chunk in r.iter_content(chunk_size=1024):
         if chunk:  # filter out keep-alive new chunks
             f.write(chunk)
@@ -81,10 +83,12 @@ def handle_download(_id, retry=0):
         if not os.path.isfile(file_name):
             rq = requests.get('http://archive.org/download/' + _id)
             if rq.status_code == 200:
-
                 if not rq.url.endswith('/'):
                     rq.url = rq.url + '/'
-                download_file(options, rq.url + _id + "_meta.xml", file_name)
+                
+                url = rq.url + _id + "_meta.xml"
+                if not os.path.isfile(file_name):
+                    download_file(options, url, file_name)
 
         url = 'http://archive.org/details/' + _id
         file_name = os.path.join(options.html, _id + ".html")
@@ -136,6 +140,10 @@ if __name__ == "__main__":
         identifiers = identifiers[options.skip:]
     
     # Download
-    parallel_download(identifiers)
-    
+    # parallel_download(identifiers)
+
+    # For Testing
+    for id_ in identifiers:
+        handle_download(id_)
+
     logging.info("All done")
