@@ -140,10 +140,11 @@ if __name__ == "__main__":
         identifiers = identifiers[options.skip:]
     
     # Download
-    # parallel_download(identifiers)
+    parallel_download(identifiers)
 
     # For Testing
-    for id_ in identifiers:
-        handle_download(id_)
+    if os.environ["ARCHIVE_TEST"]:
+        for id_ in identifiers:
+            handle_download(id_)
 
     logging.info("All done")
