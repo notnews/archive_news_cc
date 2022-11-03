@@ -27,10 +27,8 @@ __version__ = 'r5 (2022/10/28)'
 
 META_DIR = 'data/meta/'
 HTML_DIR = 'data/html/'
-try:
-    MAX_WORKERS = int(os.environ["MAX_WORKERS"])
-except:
-    MAX_WORKERS = 3
+MAX_WORKERS = int(os.environ.get("MAX_WORKERS", 3))
+
 
 
 def parse_command_line(argv):
@@ -139,15 +137,21 @@ if __name__ == "__main__":
     if options.skip:
         identifiers = identifiers[options.skip:]
     
-
     # Download
-    if os.environ["ARCHIVE_TEST"]:
+    if os.environ.get("ARCHIVE_TEST"):
         # Testing
         for id_ in identifiers:
             handle_download(id_)
     else:
         # Multithread
-        parallel_download(identifiers)
-
+        total = len(identifiers)
+        downloaded = len(os.listdir(options.html))
+        while downloaded != total:
+            try:
+                parallel_download(identifiers)
+            except Exception as e:
+                logging.warning(f'Restarting: {e}')
+            
+            time.sleep(120)
 
     logging.info("All done")
