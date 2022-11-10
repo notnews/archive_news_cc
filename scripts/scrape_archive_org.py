@@ -145,7 +145,9 @@ if __name__ == "__main__":
     else:
         # Multithread
         total = len(identifiers)
+        logging.info(f'{total} total identifiers to process...')
         downloaded = len(os.listdir(options.html))
+        logging.info(f'{downloaded} total identifiers downloaded...')
         while downloaded != total:
             try:
                 parallel_download(identifiers)
