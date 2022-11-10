@@ -14,8 +14,8 @@ import requests
 
 from bs4 import BeautifulSoup
 
-META_DIR = './meta/'
-HTML_DIR = './html/'
+META_DIR = 'data/meta/'
+HTML_DIR = 'data/html/'
 
 __version__ = 'r4 (2017/11/28)'
 
