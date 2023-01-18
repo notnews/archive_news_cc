@@ -6,9 +6,9 @@
 
 # in out data
 #data/
-*.html
-*.csv
-*.xml
+#*.html
+#*.csv
+#*.xml
 
 # apple
 *.DS_Store
