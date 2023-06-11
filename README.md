@@ -69,20 +69,32 @@ For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for i
 
 ### Data
 
-The data are hosted on Google Cloud Storage. It is setup such that the requestor pays. To learn more about how to download the files from Google Storage, click [here](https://cloud.google.com/storage/docs/requester-pays).
+The data are hosted on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/OAJJHI)
 
-There are two separate datasets, one with ~ 500k and another with about 860k news transcripts.
 
-**500k Dataset from 2014**
+**Dataset Summary:**
 
-* [CSV (~ 2.7 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2014.csv.xz)
-* [HTML (~ 10.4 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html-2014.7z)
+1. **500k Dataset from 2014:**
+   - CSV: `archive-cc-2014.csv.xza*` (2.7 GB, split into 2GB files)
+   - HTML: `html-2014.7za*` (10.4 GB, split into 2GB files)
 
-**860k Dataset from 2017**
+2. **860k Dataset from 2017:**
+   - CSV: `archive-cc-2017.csv.gza*` (10.6 GB, split into 2GB files)
+   - HTML: `html-2017.tar.gza*` (20.2 GB, split into 2GB files)
+   - Meta: `meta-2017.tar.gza*` (2.6 GB, split into 2GB files)
 
-* [CSV (~ 10.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/archive-cc-2017.csv.gz)
-* [HTML (~ 20.2 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/html.tar.gz)
-* [Meta (~ 2.6 GB)](https://storage.googleapis.com/closed-caption-tv-news-archive/meta.tar.gz)
+3. **917k Dataset from 2022:**
+   - CSV: `archive-cc-2022.csv.gza*` (12.6 GB, split into 2GB files)
+   - HTML: `html-2022.tar.gza*` (41.1 GB, split into 2GB files)
+   - Meta: `meta-2022.tar.gz` (2.1 GB)
+
+4. **179k Dataset from 2023:**
+   - CSV: `archive-cc-2023.csv.gz` (1.7 GB)
+   - HTML: `html-2023.tar.gza*` (7.3 GB, split into 2GB files)
+   - Meta: `meta-2023.tar.gz` (317 MB)
+
+Please note that the file sizes and splitting information mentioned above are approximate.
+
 
 ### License
 
