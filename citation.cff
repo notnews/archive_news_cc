@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this dataset, please cite it as below."
+title: "archive.org TV News Closed Caption Corpus"
+authors:
+  - family-names: "Laohaprapanon"
+    given-names: "Suriyan"
+  - family-names: "Sood"
+    given-names: "Gaurav"
+date-released: 2023
+url: "https://github.com/notnews/archive_news_cc/"
+repository-code: "https://github.com/notnews/archive_news_cc/"
+type: dataset
