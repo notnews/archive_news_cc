@@ -1,76 +1,202 @@
 ## Closed Captions of News Videos from Archive.org
 
-The repository provides scripts for downloading the data, and link to two datasets that were built using the scripts:
+This repository provides a small CLI for fetching Archive.org TV news identifiers, downloading the corresponding raw files, and parsing them into structured records.
 
-* [Scripts](https://github.com/notnews/archive_news_cc#downloading-the-data-from-archiveorg)
-* [Data](https://github.com/notnews/archive_news_cc#data)
+The project now uses `uv` and a `pyproject.toml` build.
 
--------------
+Useful links:
 
-### Downloading the Data from Archive.org
+- [Scripts / CLI workflow](https://github.com/notnews/archive_news_cc#quickstart)
+- [Data](https://github.com/notnews/archive_news_cc#data)
 
-Download closed caption transcripts of nearly 1.3M news shows from [http://archive.org](http://archive.org). 
+### What It Produces
 
-There are three steps to downloading the transcripts:
+The storage model is intentionally simple:
 
-1. We start by searching [https://archive.org/advancedsearch.php](https://archive.org/advancedsearch.php) with collection `collection:"tvarchive"`. This gets us unique identifiers for each of the news shows. An identifier is a simple string that combines channel_name, show_name, time, and date. The current final list of identifiers (2009--Nov. 2017) is posted [here](data/search.csv). 
+- raw source files: `.xml.gz` and `.html.gz`
+- identifier lists: `jsonl`
+- parsed show records: `jsonl.gz`
+- run metadata: small `.json` manifests
 
-2. Next, we use the identifier to build a URL where the metadata file and HTML file with the closed captions is posted. The general base URL is http://archive.org/download followed by the identifier.
+This repo no longer treats CSV as the primary storage format.
 
-3. The third script parses the downloaded metadata and HTML closed caption files and creates a CSV along with the meta data.
+### Quickstart
 
-For instance, we will go http://archive.org/download/CSPAN_20090604_230000 for identifier `CSPAN_20090604_230000` And from http://archive.org/download/CSPAN_20090604_230000/CSPAN_20090604_230000_meta.xml, we read the link http://archive.org/details/CSPAN_20090604_230000, from which we get the text from HTML file. We also store the meta data from the META XML file.
+Install dependencies:
 
-#### Scripts
+```bash
+uv sync
+```
 
-1. **Get Show Identifiers**  
-    - [Get Identifiers For Each Show (Channel, Show, Date, Time)](scripts/get_news_identifiers.py)
-    - Produces [data/search.csv](data/search.csv)
+See the CLI:
 
-2. **Download Metadata and HTML Files**  
-    - [Download the Metadata and HTML Files](scripts/scrape_archive_org.py)
-    - Saves the metadata and HTML files to two separate folders specified in `--meta` and `--html` respectively. The default folder names are `meta` and `html` respectively.
+```bash
+uv run archive-news-cc --help
+```
 
-3. **Parse Metadata and HTML Files**  
-    - [Parses metadata and HTML Files and Saves to a CSV](scripts/parse_archive.py)
-    - Produces a CSV. [Here's an example](data/archive-out.csv)
+The CLI has three subcommands:
 
-#### Running the Scripts
+- `archive-news-cc identifiers`
+- `archive-news-cc scrape`
+- `archive-news-cc parse`
 
-1. Get all TV Archive identifiers from archive.org.  
+### Typical Workflow
 
-    ```
-    python get_news_identifiers.py -o ../data/search.csv
-    ```
+1. Fetch an identifier list from Archive.org.
+2. Download metadata XML and caption HTML for those identifiers.
+3. Parse the downloaded files into structured JSONL records.
 
-2. Download metadata and HTML files for all the shows in the [sample input file](data/search-test.csv)  
+Example:
 
-    ```
-    python scrape_archive_org.py ../data/search-test.csv
-    ```
+```bash
+uv run archive-news-cc identifiers \
+  --sort "date desc" \
+  --count 25 \
+  --output data/identifiers.jsonl
 
-    This will create two directories `meta` and `html` by default in the same folder as where the script is. We have included the first [25 metadata](data/meta/) and first 25 [html files](data/html/).  
+uv run archive-news-cc scrape \
+  --meta data/meta \
+  --html data/html \
+  data/identifiers.jsonl
 
-    You can change the folder for `meta` by using the `--meta` flag. To change the directory for `html`, use the `--html` flag and specify the new directory. For instance,  
+uv run archive-news-cc parse \
+  --meta data/meta \
+  --html data/html \
+  --outfile data/archive-out.jsonl.gz \
+  data/identifiers.jsonl
+```
 
-    ```
-    python scrape_archive_org.py --meta meta-foxnews --html html-foxnews ../data/search-test.csv
-    ```
+### Latest Available Example
 
-    Use `-c/--compress` option to store and parse the downloaded files in compression format (GZip).
+For a reproducible "latest data" run, fetch the latest available identifiers, save that exact identifier list, and parse from that saved list.
 
-3. Parse and extract meta fields and text from [sample metadata](data/meta) and [HTML files](data/html). 
+```bash
+uv run archive-news-cc identifiers \
+  --sort "date desc" \
+  --count 25 \
+  --output examples/runs/latest-2026-05-12/identifiers.jsonl
+```
 
-    ```
-    python parse_archive.py ../data/search-test.csv
-    ```
+Then download and parse that exact slice:
 
-    A [sample output file](data/archive-out.csv).
+```bash
+uv run archive-news-cc scrape \
+  --meta examples/runs/latest-2026-05-12/meta \
+  --html examples/runs/latest-2026-05-12/html \
+  examples/runs/latest-2026-05-12/identifiers.jsonl
+
+uv run archive-news-cc parse \
+  --meta examples/runs/latest-2026-05-12/meta \
+  --html examples/runs/latest-2026-05-12/html \
+  --outfile examples/runs/latest-2026-05-12/archive.jsonl.gz \
+  examples/runs/latest-2026-05-12/identifiers.jsonl
+```
+
+There is also a checked-in example script at [examples/latest-news-window.sh](/Users/soodoku/Documents/GitHub/archive_news_cc/examples/latest-news-window.sh:1):
+
+```bash
+MAX_IDS=25 ./examples/latest-news-window.sh
+```
+
+That script writes:
+
+- `identifiers.jsonl`
+- `meta/`
+- `html/`
+- `archive.jsonl.gz`
+- `manifest.json`
+
+### Resumability
+
+Resumability is intentionally narrow:
+
+- `scrape` skips raw files that already exist on disk
+- `parse --resume` skips identifiers already present in the output file
+- `identifiers` writes a fresh immutable identifier list for each run
+
+If parsing is interrupted:
+
+```bash
+uv run archive-news-cc parse --resume \
+  --meta examples/runs/latest-2026-05-12/meta \
+  --html examples/runs/latest-2026-05-12/html \
+  --outfile examples/runs/latest-2026-05-12/archive.jsonl.gz \
+  examples/runs/latest-2026-05-12/identifiers.jsonl
+```
+
+### Archive.org Access
+
+The defaults are conservative on purpose:
+
+- `scrape` defaults to `--max-workers 2`
+- Archive.org requests default to `--min-request-interval 1.0`
+- `429` and `503` responses back off and retry automatically
+- a user-agent is sent on Archive.org requests
+
+Each Archive.org-facing command also supports:
+
+- `--request-timeout`
+- `--min-request-interval`
+- `--user-agent`
+
+Logs go to `logs/` by default, and all commands support:
+
+- `--log-level`
+- `--log-dir`
+
+### Record Shape
+
+Parsed output is one JSON record per show. A typical record looks like:
+
+```json
+{
+  "identifier": "KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir",
+  "identifier_record": {
+    "identifier": "KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir",
+    "rank": 2,
+    "query": "collection:\"tvarchive\"",
+    "sort": "date desc",
+    "fetched_at": "2026-05-13T04:00:00+00:00"
+  },
+  "source": {
+    "meta_path": "data/meta/KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir_meta.xml.gz",
+    "html_path": "data/html/KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir.html.gz"
+  },
+  "metadata": {
+    "title": "ABC World News Tonight With David Muir",
+    "date": "2026-05-13"
+  },
+  "transcript": {
+    "text": "..."
+  }
+}
+```
+
+Metadata fields remain structured. Repeated XML tags are stored as arrays rather than flattened into one delimiter-separated string.
+
+### Inputs and Outputs
+
+`identifiers`
+
+- queries Archive.org advanced search
+- writes `jsonl` identifier records
+- supports `--start-date`, `--end-date`, and `--sort`
+
+`scrape`
+
+- reads identifier records from `jsonl`
+- downloads metadata XML and caption HTML
+- writes raw files to `--meta` and `--html`
+
+`parse`
+
+- reads identifier records from `jsonl`
+- reads raw files from `--meta` and `--html`
+- writes parsed show records to `jsonl` or `jsonl.gz`
 
 ### Data
 
 The data are hosted on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/OAJJHI)
-
 
 **Dataset Summary:**
 
@@ -95,21 +221,21 @@ The data are hosted on [Harvard Dataverse](https://dataverse.harvard.edu/dataset
 
 Please note that the file sizes and splitting information mentioned above are approximate.
 
-
 ### License
 
 We are releasing the scripts under the [MIT License](https://opensource.org/licenses/MIT).
 
 ### Suggested Citation
 
-Please credit Internet Archive for the data. 
+Please credit Internet Archive for the data.
 
 If you wanted to refer to this particular corpus so that the research is reproducible, you can cite it as:
-```
-archive.org TV News Closed Caption Corpus. Laohaprapanon, Suriyan and Gaurav Sood. 2017. https://github.com/notnews/archive_news_cc/     
+
+```text
+archive.org TV News Closed Caption Corpus. Laohaprapanon, Suriyan and Gaurav Sood. 2017. https://github.com/notnews/archive_news_cc/
 ```
 
-## 🔗 Adjacent Repositories
+## Adjacent Repositories
 
 - [notnews/lacc_to_csv](https://github.com/notnews/lacc_to_csv) — Los Angeles Closed-Caption Television News Archive Data to CSV
 - [notnews/fox_news_transcripts](https://github.com/notnews/fox_news_transcripts) — Fox News Transcripts 2003--2025
