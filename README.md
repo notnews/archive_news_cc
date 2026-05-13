@@ -6,7 +6,7 @@ The project now uses `uv` and a `pyproject.toml` build.
 
 Useful links:
 
-- [Scripts / CLI workflow](https://github.com/notnews/archive_news_cc#quickstart)
+- [CLI workflow](https://github.com/notnews/archive_news_cc#quickstart)
 - [Data](https://github.com/notnews/archive_news_cc#data)
 
 ### What It Produces
@@ -193,6 +193,11 @@ Metadata fields remain structured. Repeated XML tags are stored as arrays rather
 - reads identifier records from `jsonl`
 - reads raw files from `--meta` and `--html`
 - writes parsed show records to `jsonl` or `jsonl.gz`
+
+### Repository Layout
+
+- `src/archive_news_cc/`: package code
+- `examples/`: runnable example workflows
 
 ### Data
 
