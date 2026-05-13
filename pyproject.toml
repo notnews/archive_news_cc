@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "archive-news-cc"
+version = "0.1.0"
+description = "Utilities for downloading and parsing Archive.org TV news closed captions."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Suriyan Laohaprapanon" },
+  { name = "Gaurav Sood" },
+]
+dependencies = [
+  "beautifulsoup4",
+  "requests",
+]
+
+[project.urls]
+Homepage = "https://github.com/notnews/archive_news_cc"
+Repository = "https://github.com/notnews/archive_news_cc"
+
+[project.scripts]
+archive-news-cc = "archive_news_cc.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/archive_news_cc"]
+
+[tool.uv]
+package = true
