@@ -5,6 +5,9 @@ on:
     - cron: '0 5 * * 0'   # Every Sunday at 5am UTC
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   recommend-repos:
     runs-on: ubuntu-latest
