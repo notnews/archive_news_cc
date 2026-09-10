@@ -51,7 +51,7 @@ The `tvarchive` collection held 4,459,094 items on 2026-09-10 and grows by sever
 
 `identifiers` queries `collection:tvarchive`, optionally filtered by air date, publication date (`--since`), or station. Cursor pagination streams all matching items. `fetch` writes `data/meta/<id>_meta.json` and `data/html/<id>.html.gz` atomically, skips existing files, and appends failures to `data/fetch_failures.jsonl`. `parse` joins `div.snipin.nosel` snippets and flattens metadata; `--resume` appends only new identifiers.
 
-The scripts that produced the four Dataverse runs used advancedsearch.php, `_meta.xml` files and a CSV writer; they are preserved at commit [`412f9ad1d11c74ccd6e344769727fe008e1a2314`](https://github.com/notnews/archive_news_cc/tree/412f9ad1d11c74ccd6e344769727fe008e1a2314). The 2026 rewrite fixed non-atomic downloads, a single-page search limit, and snippets joined without separators.
+The scripts that produced the four Dataverse runs used advancedsearch.php, `_meta.xml` files and a CSV writer; they are preserved at commit [`412f9ad1d11c74ccd6e344769727fe008e1a2314`](https://github.com/notnews/archive_news_cc/tree/412f9ad1d11c74ccd6e344769727fe008e1a2314). The current collector fixes non-atomic downloads, a single-page search limit, and snippets joined without separators.
 
 An interrupted, unterminated final JSONL record is removed before resuming; complete records are preserved. A valid final record missing only its newline is retained. Malformed complete lines remain errors.
 
@@ -111,7 +111,7 @@ See [CITATION.cff](CITATION.cff). Cite the Dataverse DOI for the data and credit
 
 ## License
 
-Code is [MIT licensed](LICENSE). Captions and metadata retain their owners’ rights; the code license does not grant rights to those materials. Consult the terms of the linked data release.
+Code is [MIT licensed](LICENSE). Captions and metadata retain their owners’ rights; the code license does not grant rights to those materials. The [Dataverse DOI record](https://api.datacite.org/dois/10.7910/DVN/OAJJHI) specifies CC0 1.0 for the deposit. Consult the release for access conditions.
 
 ## Adjacent Repositories
 
