@@ -17,7 +17,7 @@ Four collection runs, each published as a CSV of parsed captions plus the raw pa
 | 2022 | 917k | `archive-cc-2022.csv.gza*` 12.6 GB | `html-2022.tar.gza*` 41.1 GB | `meta-2022.tar.gz` 2.1 GB |
 | 2023 | 179k | `archive-cc-2023.csv.gz` 1.7 GB | `html-2023.tar.gza*` 7.3 GB | `meta-2023.tar.gz` 317 MB |
 
-"No commercials" variants of the 2014, 2017, 2022 and 2023 CSVs were produced by notebooks that removed commercial segments from the `text` column; those notebooks are preserved at commit [`4182c3b`](https://github.com/notnews/archive_news_cc/tree/4182c3b/scripts/commercial).
+"No commercials" variants of the 2014, 2017, 2022 and 2023 CSVs were produced by notebooks that removed commercial segments from the `text` column; those notebooks are preserved at commit [`ddb53fcbf6c86c0ecedb05b18dcf0b44d054c3c3`](https://github.com/notnews/archive_news_cc/tree/ddb53fcbf6c86c0ecedb05b18dcf0b44d054c3c3/scripts/commercial).
 
 ## Column dictionary
 
@@ -51,7 +51,7 @@ The `tvarchive` collection held 4,459,094 items on 2026-09-10 and grows by sever
 
 `identifiers` queries `collection:tvarchive`, optionally filtered by air date, publication date (`--since`), or station. Cursor pagination streams all matching items. `fetch` writes `data/meta/<id>_meta.json` and `data/html/<id>.html.gz` atomically, skips existing files, and appends failures to `data/fetch_failures.jsonl`. `parse` joins `div.snipin.nosel` snippets and flattens metadata; `--resume` appends only new identifiers.
 
-The scripts that produced the four Dataverse runs used advancedsearch.php, `_meta.xml` files and a CSV writer; they are preserved at commit [`e78985d`](https://github.com/notnews/archive_news_cc/tree/e78985d). The 2026 rewrite fixed non-atomic downloads, a single-page search limit, and snippets joined without separators.
+The scripts that produced the four Dataverse runs used advancedsearch.php, `_meta.xml` files and a CSV writer; they are preserved at commit [`412f9ad1d11c74ccd6e344769727fe008e1a2314`](https://github.com/notnews/archive_news_cc/tree/412f9ad1d11c74ccd6e344769727fe008e1a2314). The 2026 rewrite fixed non-atomic downloads, a single-page search limit, and snippets joined without separators.
 
 An interrupted, unterminated final JSONL record is removed before resuming; complete records are preserved. A valid final record missing only its newline is retained. Malformed complete lines remain errors.
 
