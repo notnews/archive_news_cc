@@ -1,177 +1,125 @@
+"""Turn fetched metadata JSON and details HTML into one record per item."""
+
 from __future__ import annotations
 
-import argparse
+import json
 import logging
-import xml.etree.ElementTree as ET
-from pathlib import Path
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 from bs4 import BeautifulSoup
 
-from archive_news_cc.common import (
-    DEFAULT_HTML_DIR,
-    DEFAULT_META_DIR,
-    add_logging_arguments,
-    configure_logging,
-    iter_identifier_rows,
-    iter_json_lines,
-    open_maybe_gzip,
-    resolve_existing,
-    write_json_lines,
+from archive_news_cc.checkpoint import prepare_checkpoint
+from archive_news_cc.common import iter_json_lines, open_maybe_gzip, resolve_existing
+from archive_news_cc.fetch import DEFAULT_HTML_DIR, DEFAULT_META_DIR
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from pathlib import Path
+
+log = logging.getLogger(__name__)
+
+# Metadata keys promoted to top-level columns. Everything else stays in `extra`.
+PROMOTED = (
+    "title",
+    "date",
+    "publicdate",
+    "contributor",
+    "description",
+    "language",
+    "runtime",
+    "closed_captioning",
+    "access-restricted-item",
 )
 
 
-def build_parser(parser: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
-    if parser is None:
-        parser = argparse.ArgumentParser(
-            description="Parse Archive.org metadata and HTML into JSON Lines."
-        )
-    parser.add_argument(
-        "input_records", type=Path, help="JSONL file containing identifier records."
-    )
-    parser.add_argument(
-        "-o",
-        "--outfile",
-        type=Path,
-        default=Path("archive-out.jsonl.gz"),
-        help="Output JSONL or JSONL.GZ filename.",
-    )
-    parser.add_argument(
-        "--meta",
-        type=Path,
-        default=DEFAULT_META_DIR,
-        help="Metadata files directory.",
-    )
-    parser.add_argument(
-        "--html",
-        type=Path,
-        default=DEFAULT_HTML_DIR,
-        help="HTML files directory.",
-    )
-    parser.add_argument(
-        "-s",
-        "--skip",
-        type=int,
-        default=0,
-        help="Skip records from the input JSONL.",
-    )
-    parser.add_argument(
-        "--resume",
-        action="store_true",
-        help="Skip identifiers already present in the output file and append new records.",
-    )
-    add_logging_arguments(parser)
-    return parser
+@dataclass(slots=True)
+class ParseSummary:
+    """Counts reported at the end of a run."""
+
+    seen: int = 0
+    emitted: int = 0
+    skipped_existing: int = 0
+    missing_files: list[str] = field(default_factory=list)
+    empty_captions: int = 0
 
 
-def normalize_values(values: list[str]) -> str | list[str]:
-    if len(values) == 1:
-        return values[0]
-    return values
+def parse_captions(html: str | bytes) -> str:
+    """Return the caption text of a details page.
+
+    Snippets sit in ``div.snipin.nosel`` elements. The class attribute has
+    carried a double space (``"snipin  nosel"``) in captured pages. CSS selectors match
+    each class token. Snippets are
+    joined with a space so sentence boundaries survive.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    parts = (div.get_text(" ", strip=True) for div in soup.select("div.snipin.nosel"))
+    return " ".join(p for p in parts if p)
 
 
-def parse_meta_file(meta_path: Path) -> dict[str, str | list[str]]:
-    with open_maybe_gzip(meta_path, "rb") as handle:
-        root = ET.fromstring(handle.read())
-
-    parsed: dict[str, list[str]] = {}
-    for element in root.iter():
-        text = (element.text or "").strip()
-        if not text:
-            continue
-        parsed.setdefault(element.tag, []).append(text)
-
-    return {key: normalize_values(values) for key, values in parsed.items()}
+def _scalar(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return "; ".join(str(v) for v in value) if value else None
+    return str(value)
 
 
-def parse_html_file(html_path: Path) -> str:
+def parse_metadata(record: dict[str, Any]) -> dict[str, Any]:
+    """Flatten a saved metadata record into promoted columns plus ``extra``."""
+    meta = record.get("metadata", record)
+    promoted = {key.replace("-", "_"): _scalar(meta.get(key)) for key in PROMOTED}
+    extra = {k: v for k, v in meta.items() if k not in PROMOTED}
+    return {**promoted, "files": record.get("files", []), "extra": extra}
+
+
+def parse_item(identifier: str, meta_path: Path, html_path: Path) -> dict[str, Any]:
+    """Build the record for one item from its two files on disk."""
+    with open_maybe_gzip(meta_path, "rt") as handle:
+        meta = parse_metadata(json.load(handle))
     with open_maybe_gzip(html_path, "rb") as handle:
-        soup = BeautifulSoup(handle.read(), "html.parser")
-    snippets = [
-        node.get_text(strip=True)
-        for node in soup.find_all("div", {"class": "snipin nosel"})
-    ]
-    return "".join(snippets)
+        text = parse_captions(handle.read())
+    return {
+        "identifier": identifier,
+        **meta,
+        "text": text,
+        "wordcount": len(text.split()),
+        "caption_empty": not text,
+        "source": {"meta_path": str(meta_path), "html_path": str(html_path)},
+    }
 
 
-def build_rows(
-    input_records: Path,
-    meta_dir: Path,
-    html_dir: Path,
-    skip: int,
-    existing_identifiers: set[str] | None = None,
-):
-    processed = 0
-    emitted = 0
-    for index, row in enumerate(iter_identifier_rows(input_records, skip=skip), start=1):
-        identifier = str(row["identifier"])
-        if existing_identifiers and identifier in existing_identifiers:
-            logging.info("Skipping already parsed identifier %s", identifier)
-            continue
-
-        processed += 1
-        logging.info("Parsing #%s: %s", index, identifier)
-        meta_path = resolve_existing(meta_dir / f"{identifier}_meta.xml")
-        html_path = resolve_existing(html_dir / f"{identifier}.html")
-        if not meta_path or not html_path:
-            logging.warning("Skipping %s because metadata or HTML is missing", identifier)
-            continue
-
-        try:
-            parsed = {
-                "identifier": identifier,
-                "identifier_record": row,
-                "source": {
-                    "meta_path": str(meta_path),
-                    "html_path": str(html_path),
-                },
-                "metadata": parse_meta_file(meta_path),
-                "transcript": {
-                    "text": parse_html_file(html_path),
-                },
-            }
-        except Exception as exc:
-            logging.warning("Skipping %s because parsing failed: %s", identifier, exc)
-            continue
-        emitted += 1
-        yield parsed
-    logging.info("Processed %s new identifiers and emitted %s records", processed, emitted)
-
-
-def read_existing_identifiers(path: Path) -> set[str]:
+def existing_identifiers(path: Path) -> set[str]:
+    """Identifiers already present in an output JSONL, for ``--resume``."""
     if not path.exists():
         return set()
-    identifiers = {
-        str(record["identifier"])
-        for record in iter_json_lines(path)
-        if "identifier" in record
-    }
-    logging.info("Found %s existing parsed identifiers in %s", len(identifiers), path)
-    return identifiers
+    prepare_checkpoint(path)
+    return {str(r["identifier"]) for r in iter_json_lines(path) if "identifier" in r}
 
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    return run(args)
-
-
-def run(args: argparse.Namespace) -> int:
-    configure_logging(
-        "parse_archive.log",
-        log_level=args.log_level,
-        log_dir=args.log_dir,
-    )
-    existing_identifiers = read_existing_identifiers(args.outfile) if args.resume else set()
-    rows = build_rows(
-        args.input_records,
-        args.meta,
-        args.html,
-        args.skip,
-        existing_identifiers,
-    )
-    write_json_lines(args.outfile, rows, mode="at" if args.resume else "wt")
-    logging.info("Wrote parsed output to %s", args.outfile)
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+def parse_all(
+    identifiers: list[str],
+    meta_dir: Path = DEFAULT_META_DIR,
+    html_dir: Path = DEFAULT_HTML_DIR,
+    skip: set[str] | None = None,
+    summary: ParseSummary | None = None,
+) -> Iterator[dict[str, Any]]:
+    """Yield a record per identifier whose files exist; count the rest."""
+    summary = summary if summary is not None else ParseSummary()
+    skip = skip or set()
+    for identifier in identifiers:
+        summary.seen += 1
+        if identifier in skip:
+            summary.skipped_existing += 1
+            continue
+        meta_path = resolve_existing(meta_dir / f"{identifier}_meta.json")
+        html_path = resolve_existing(html_dir / f"{identifier}.html")
+        if meta_path is None or html_path is None:
+            summary.missing_files.append(identifier)
+            continue
+        record = parse_item(identifier, meta_path, html_path)
+        if record["caption_empty"]:
+            summary.empty_captions += 1
+        summary.emitted += 1
+        skip.add(identifier)
+        yield record

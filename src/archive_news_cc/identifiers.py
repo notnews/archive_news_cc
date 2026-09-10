@@ -1,153 +1,106 @@
+"""List TV News Archive items via the Internet Archive search API.
+
+Uses ``internetarchive.search_items``, which pages through the scrape API with
+a cursor, so a query that matches millions of items streams instead of
+truncating at one page. The previous implementation asked advancedsearch.php
+for ``rows=N`` on page 1 and silently stopped there.
+"""
+
 from __future__ import annotations
 
-import argparse
-import io
 import logging
-from datetime import date, datetime, timezone
-from pathlib import Path
+from datetime import UTC, date, datetime
+from itertools import islice
+from typing import TYPE_CHECKING, Any
 
-from archive_news_cc.archive_client import ArchiveClient, add_archive_http_arguments
-from archive_news_cc.common import add_logging_arguments, configure_logging, write_json_lines
+import internetarchive
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
+    from pathlib import Path
 
-def build_parser(parser: argparse.ArgumentParser | None = None) -> argparse.ArgumentParser:
-    if parser is None:
-        parser = argparse.ArgumentParser(
-            description="Get TV archive identifiers from Archive.org."
-        )
-    parser.add_argument(
-        "-n",
-        "--count",
-        type=int,
-        default=25,
-        help="Limit number of identifiers to fetch.",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        default=Path("data/identifiers.jsonl"),
-        help="Output JSONL filename.",
-    )
-    parser.add_argument(
-        "-sd",
-        "--start-date",
-        type=date.fromisoformat,
-        help="Starting date filter in YYYY-MM-DD format.",
-    )
-    parser.add_argument(
-        "-ed",
-        "--end-date",
-        type=date.fromisoformat,
-        help="Ending date filter in YYYY-MM-DD format.",
-    )
-    parser.add_argument(
-        "--sort",
-        default="date desc",
-        help="Archive.org sort expression, for example 'date desc' or 'publicdate desc'.",
-    )
-    add_archive_http_arguments(parser)
-    add_logging_arguments(parser)
-    return parser
+from archive_news_cc.common import write_json_lines
+
+log = logging.getLogger(__name__)
+
+COLLECTION = "tvarchive"
+FIELDS = ["identifier", "date", "publicdate", "contributor", "title"]
 
 
-def build_query(start_date: date | None, end_date: date | None) -> str:
-    query = 'collection:"tvarchive"'
+def build_query(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    since: date | None = None,
+    contributor: str | None = None,
+) -> str:
+    """Compose the Lucene-style query for the TV News Archive collection.
+
+    Args:
+        start_date: First air date to include.
+        end_date: Last air date to include.
+        since: Only items published to archive.org on or after this date. Use
+            this for incremental runs; air date can predate publication by days.
+        contributor: Station code such as ``CNNW`` or ``KGO``.
+
+    Returns:
+        The query string.
+
+    Raises:
+        ValueError: If ``start_date`` is after ``end_date``.
+    """
     if start_date and end_date and start_date > end_date:
         raise ValueError("start_date cannot be after end_date")
+    parts = [f"collection:{COLLECTION}"]
     if start_date or end_date:
-        lower = start_date.isoformat() if start_date else "0001-01-01"
-        upper = end_date.isoformat() if end_date else "null"
-        query += f" AND date:[{lower} TO {upper}]"
-    return query
+        lower = start_date.isoformat() if start_date else "*"
+        upper = end_date.isoformat() if end_date else "*"
+        parts.append(f"date:[{lower} TO {upper}]")
+    if since:
+        parts.append(f"publicdate:[{since.isoformat()} TO *]")
+    if contributor:
+        parts.append(f'contributor:"{contributor}"')
+    return " AND ".join(parts)
 
 
-def parse_identifier_csv(payload: bytes) -> list[str]:
-    text = payload.decode("utf-8")
-    rows = [line.strip().strip('"') for line in text.splitlines() if line.strip()]
-    if rows and rows[0] == "identifier":
-        rows = rows[1:]
-    return rows
-
-
-def fetch_identifiers(
-    client: ArchiveClient,
-    count: int,
-    output_path: Path,
-    start_date: date | None,
-    end_date: date | None,
-    sort: str,
-) -> None:
-    logging.info("Searching and downloading TV archive identifiers.")
-
-    query = build_query(start_date, end_date)
-    logging.info("Using Archive.org query: %s", query)
-
-    params = {
-        "q": query,
-        "fl[]": "identifier",
-        "sort[]": sort,
-        "rows": count,
-        "page": 1,
-        "output": "csv",
-    }
-
-    response = client.get_with_backoff(
-        "https://archive.org/advancedsearch.php",
-        retries=5,
-        backoff_seconds=10.0,
-        params=params,
-        stream=True,
+def search(query: str, sorts: list[str] | None = None) -> Iterable[dict[str, Any]]:
+    """Return an iterable of result dicts for ``query`` (lazy, cursor-paged)."""
+    return internetarchive.search_items(
+        query, fields=FIELDS, sorts=sorts or ["publicdate desc"]
     )
 
-    payload = io.BytesIO()
-    for chunk in response.iter_content(64 * 1024):
-        if chunk:
-            payload.write(chunk)
 
-    fetched_at = datetime.now(timezone.utc).isoformat()
-    records = [
-        {
-            "identifier": identifier,
-            "rank": index,
-            "query": query,
-            "sort": sort,
-            "fetched_at": fetched_at,
-        }
-        for index, identifier in enumerate(
-            parse_identifier_csv(payload.getvalue()), start=1
-        )
-    ]
-    write_json_lines(output_path, records)
-    logging.info("Wrote %s identifiers to %s", len(records), output_path)
+def to_records(
+    results: Iterable[dict[str, Any]], query: str, limit: int | None = None
+) -> Iterator[dict[str, Any]]:
+    """Attach rank, query and fetch time to raw search hits."""
+    fetched_at = datetime.now(UTC).isoformat()
+    if limit is not None and limit < 1:
+        raise ValueError("limit must be positive")
+    selected = islice(results, limit) if limit is not None else results
+    for rank, hit in enumerate(selected, start=1):
+        yield {**hit, "rank": rank, "query": query, "fetched_at": fetched_at}
 
 
-def run(args: argparse.Namespace) -> int:
-    configure_logging(
-        "get_news_identifiers.log",
-        log_level=args.log_level,
-        log_dir=args.log_dir,
-    )
-    client = ArchiveClient(
-        user_agent=args.user_agent,
-        request_timeout=args.request_timeout,
-        min_request_interval=args.min_request_interval,
-    )
-    fetch_identifiers(
-        client,
-        args.count,
-        args.output,
-        args.start_date,
-        args.end_date,
-        args.sort,
-    )
-    return 0
+def write_identifiers(
+    output: Path,
+    query: str,
+    limit: int | None = None,
+    results: Iterable[dict[str, Any]] | None = None,
+) -> int:
+    """Run ``query`` and write identifier records to ``output`` as JSONL.
 
+    Args:
+        output: Destination JSONL file (overwritten; identifier lists are
+            immutable snapshots of a query at a time).
+        query: From :func:`build_query`.
+        limit: Stop after this many hits.
+        results: Injected hits for tests; the live search otherwise.
 
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    return run(args)
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+    Returns:
+        Number of records written.
+    """
+    log.info("query: %s", query)
+    hits = results if results is not None else search(query)
+    count = write_json_lines(output, to_records(hits, query, limit))
+    log.info("wrote %d identifiers to %s", count, output)
+    return count
