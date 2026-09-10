@@ -2,7 +2,7 @@ name: Find Adjacent Repositories
 
 on:
   schedule:
-    - cron: '0 5 * * 0'   # Every Sunday at 5am UTC
+    - cron: '0 5 1 * *'   # 05:00 UTC on the first of every month
   workflow_dispatch:
 
 permissions:
@@ -11,14 +11,15 @@ permissions:
 jobs:
   recommend-repos:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Adjacent Repositories Recommender
-        uses: gojiplus/adjacent@v1.3
+        uses: gojiplus/adjacent@ab14392f3ccd0179ee0f8a995748b3b5485b6e36 # v1.4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # ✅ Pass the required token
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push changes
         run: |

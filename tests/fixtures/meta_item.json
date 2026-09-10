@@ -1,0 +1,57 @@
+{
+ "metadata": {
+  "identifier": "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir",
+  "mediatype": "movies",
+  "contributor": "KGO",
+  "sound": "sound",
+  "color": "color",
+  "title": "ABC World News Tonight With David Muir : KGO : September 10, 2026 1:06am-1:37am PDT",
+  "date": "2026-09-10",
+  "year": "2026",
+  "start_time": "2026-09-10 08:06:00",
+  "stop_time": "2026-09-10 08:37:00",
+  "utc_offset": "-700",
+  "start_localtime": "2026-09-10 01:06:00",
+  "uploader": "tv@archive.org",
+  "sponsor": "Internet Archive",
+  "identifier-access": "https://archive.org/details/KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir",
+  "scandate": "20260910080600",
+  "publicdate": "2026-09-10 08:06:00",
+  "addeddate": "2026-09-10 08:06:00",
+  "language": "eng",
+  "notes": "This material may be protected by copyright law (Title 17 U.S. Code).",
+  "collection": [
+   "TV-KGO",
+   "tvarchive",
+   "tvnews",
+   "chingrimestvnewsarchive"
+  ],
+  "frames_per_second": "59.94",
+  "audio_codec": "ac3",
+  "video_codec": "h264",
+  "audio_sample_rate": "48000",
+  "source_pixel_width": "1280",
+  "source_pixel_height": "720",
+  "aspect_ratio": "16:9",
+  "imagecount": "1860",
+  "runtime": "00:30:59",
+  "scanner": "Internet Archive Python library 5.0.1",
+  "program": "ABC World News Tonight With David Muir",
+  "subject": [
+   "ABC World News Tonight With David Muir",
+   "Television Program"
+  ],
+  "description": "Delivering the news that matters most.",
+  "source": "Comcast Cable",
+  "tuner": "Virtual Ch. 707",
+  "scanningcenter": "Richmond, CA, USA",
+  "access-restricted-item": "true"
+ },
+ "files": [
+  "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir.mpg",
+  "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir.xml",
+  "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir_files.xml",
+  "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir_meta.sqlite",
+  "KGO_20260910_080600_ABC_World_News_Tonight_With_David_Muir_meta.xml"
+ ]
+}

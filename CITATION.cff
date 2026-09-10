@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use these data or scripts, please cite them as below, and credit the Internet Archive for the underlying captions."
+title: "archive.org TV News Closed Caption Corpus"
+type: dataset
+version: "1.0.0"
+date-released: 2023-06-12
+authors:
+  - family-names: "Laohaprapanon"
+    given-names: "Suriyan"
+  - family-names: "Sood"
+    given-names: "Gaurav"
+    email: "gsood07@gmail.com"
+repository-code: "https://github.com/notnews/archive_news_cc"
+identifiers:
+  - type: doi
+    value: "10.7910/DVN/OAJJHI"
+    description: "Parsed captions, raw HTML and metadata on Harvard Dataverse."
+license: MIT
+keywords:
+  - closed captions
+  - TV news
+  - Internet Archive
+  - text corpus
