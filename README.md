@@ -1,244 +1,85 @@
-## Closed Captions of News Videos from Archive.org
+## Closed Captions of News Videos from archive.org
 
-This repository provides a small CLI for fetching Archive.org TV news identifiers, downloading the corresponding raw files, and parsing them into structured records.
+[![CI](https://github.com/notnews/archive_news_cc/actions/workflows/ci.yml/badge.svg)](https://github.com/notnews/archive_news_cc/actions/workflows/ci.yml)
+[![Data: Dataverse](https://img.shields.io/badge/data-10.7910%2FDVN%2FOAJJHI-blue)](https://doi.org/10.7910/DVN/OAJJHI)
+[![License: MIT](https://img.shields.io/badge/code-MIT-green)](LICENSE)
 
-The project now uses `uv` and a `pyproject.toml` build.
-
-Useful links:
-
-- [CLI workflow](https://github.com/notnews/archive_news_cc#quickstart)
-- [Data](https://github.com/notnews/archive_news_cc#data)
-
-### What It Produces
-
-The storage model is intentionally simple:
-
-- raw source files: `.xml.gz` and `.html.gz`
-- identifier lists: `jsonl`
-- parsed show records: `jsonl.gz`
-- run metadata: small `.json` manifests
-
-This repo no longer treats CSV as the primary storage format.
-
-### Quickstart
-
-Install dependencies:
-
-```bash
-uv sync
-```
-
-See the CLI:
-
-```bash
-uv run archive-news-cc --help
-```
-
-The CLI has three subcommands:
-
-- `archive-news-cc identifiers`
-- `archive-news-cc scrape`
-- `archive-news-cc parse`
-
-### Typical Workflow
-
-1. Fetch an identifier list from Archive.org.
-2. Download metadata XML and caption HTML for those identifiers.
-3. Parse the downloaded files into structured JSONL records.
-
-Example:
-
-```bash
-uv run archive-news-cc identifiers \
-  --sort "date desc" \
-  --count 25 \
-  --output data/identifiers.jsonl
-
-uv run archive-news-cc scrape \
-  --meta data/meta \
-  --html data/html \
-  data/identifiers.jsonl
-
-uv run archive-news-cc parse \
-  --meta data/meta \
-  --html data/html \
-  --outfile data/archive-out.jsonl.gz \
-  data/identifiers.jsonl
-```
-
-### Latest Available Example
-
-For a reproducible "latest data" run, fetch the latest available identifiers, save that exact identifier list, and parse from that saved list.
-
-```bash
-uv run archive-news-cc identifiers \
-  --sort "date desc" \
-  --count 25 \
-  --output examples/runs/latest-2026-05-12/identifiers.jsonl
-```
-
-Then download and parse that exact slice:
-
-```bash
-uv run archive-news-cc scrape \
-  --meta examples/runs/latest-2026-05-12/meta \
-  --html examples/runs/latest-2026-05-12/html \
-  examples/runs/latest-2026-05-12/identifiers.jsonl
-
-uv run archive-news-cc parse \
-  --meta examples/runs/latest-2026-05-12/meta \
-  --html examples/runs/latest-2026-05-12/html \
-  --outfile examples/runs/latest-2026-05-12/archive.jsonl.gz \
-  examples/runs/latest-2026-05-12/identifiers.jsonl
-```
-
-There is also a checked-in example script at [examples/latest-news-window.sh](/Users/soodoku/Documents/GitHub/archive_news_cc/examples/latest-news-window.sh:1):
-
-```bash
-MAX_IDS=25 ./examples/latest-news-window.sh
-```
-
-That script writes:
-
-- `identifiers.jsonl`
-- `meta/`
-- `html/`
-- `archive.jsonl.gz`
-- `manifest.json`
-
-### Resumability
-
-Resumability is intentionally narrow:
-
-- `scrape` skips raw files that already exist on disk
-- `parse --resume` skips identifiers already present in the output file
-- `identifiers` writes a fresh immutable identifier list for each run
-
-If parsing is interrupted:
-
-```bash
-uv run archive-news-cc parse --resume \
-  --meta examples/runs/latest-2026-05-12/meta \
-  --html examples/runs/latest-2026-05-12/html \
-  --outfile examples/runs/latest-2026-05-12/archive.jsonl.gz \
-  examples/runs/latest-2026-05-12/identifiers.jsonl
-```
-
-### Archive.org Access
-
-The defaults are conservative on purpose:
-
-- `scrape` defaults to `--max-workers 2`
-- Archive.org requests default to `--min-request-interval 1.0`
-- `429` and `503` responses back off and retry automatically
-- a user-agent is sent on Archive.org requests
-
-Each Archive.org-facing command also supports:
-
-- `--request-timeout`
-- `--min-request-interval`
-- `--user-agent`
-
-Logs go to `logs/` by default, and all commands support:
-
-- `--log-level`
-- `--log-dir`
-
-### Record Shape
-
-Parsed output is one JSON record per show. A typical record looks like:
-
-```json
-{
-  "identifier": "KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir",
-  "identifier_record": {
-    "identifier": "KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir",
-    "rank": 2,
-    "query": "collection:\"tvarchive\"",
-    "sort": "date desc",
-    "fetched_at": "2026-05-13T04:00:00+00:00"
-  },
-  "source": {
-    "meta_path": "data/meta/KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir_meta.xml.gz",
-    "html_path": "data/html/KGO_20260513_003000_ABC_World_News_Tonight_With_David_Muir.html.gz"
-  },
-  "metadata": {
-    "title": "ABC World News Tonight With David Muir",
-    "date": "2026-05-13"
-  },
-  "transcript": {
-    "text": "..."
-  }
-}
-```
-
-Metadata fields remain structured. Repeated XML tags are stored as arrays rather than flattened into one delimiter-separated string.
-
-### Inputs and Outputs
-
-`identifiers`
-
-- queries Archive.org advanced search
-- writes `jsonl` identifier records
-- supports `--start-date`, `--end-date`, and `--sort`
-
-`scrape`
-
-- reads identifier records from `jsonl`
-- downloads metadata XML and caption HTML
-- writes raw files to `--meta` and `--html`
-
-`parse`
-
-- reads identifier records from `jsonl`
-- reads raw files from `--meta` and `--html`
-- writes parsed show records to `jsonl` or `jsonl.gz`
-
-### Repository Layout
-
-- `src/archive_news_cc/`: package code
-- `examples/`: runnable example workflows
+The Internet Archive's [TV News Archive](https://archive.org/details/tvarchive) records US and international news broadcasts and shows their closed captions on each item's page. This repository holds the tools that turned about 2.5 million of those items (2009 to 2023) into a text corpus, and the record of how. The corpus itself is on Harvard Dataverse at [doi:10.7910/DVN/OAJJHI](https://doi.org/10.7910/DVN/OAJJHI). Credit the Internet Archive for the captions.
 
 ### Data
 
-The data are hosted on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/OAJJHI)
+Four collection runs, each published as a CSV of parsed captions plus the raw pages and metadata it came from. Sizes are approximate; files over 2 GB are split into `*a`, `*b`, ... parts.
 
-**Dataset Summary:**
+| Run | Items | Captions CSV | Raw HTML | Metadata |
+|---|---|---|---|---|
+| 2014 | 500k | `archive-cc-2014.csv.xza*` 2.7 GB | `html-2014.7za*` 10.4 GB | |
+| 2017 | 860k | `archive-cc-2017.csv.gza*` 10.6 GB | `html-2017.tar.gza*` 20.2 GB | `meta-2017.tar.gza*` 2.6 GB |
+| 2022 | 917k | `archive-cc-2022.csv.gza*` 12.6 GB | `html-2022.tar.gza*` 41.1 GB | `meta-2022.tar.gz` 2.1 GB |
+| 2023 | 179k | `archive-cc-2023.csv.gz` 1.7 GB | `html-2023.tar.gza*` 7.3 GB | `meta-2023.tar.gz` 317 MB |
 
-1. **500k Dataset from 2014:**
-   - CSV: `archive-cc-2014.csv.xza*` (2.7 GB, split into 2GB files)
-   - HTML: `html-2014.7za*` (10.4 GB, split into 2GB files)
+"No commercials" variants of the 2014, 2017, 2022 and 2023 CSVs were produced by notebooks that removed commercial segments from the `text` column; those notebooks are preserved at commit [`4182c3b`](https://github.com/notnews/archive_news_cc/tree/4182c3b/scripts/commercial).
 
-2. **860k Dataset from 2017:**
-   - CSV: `archive-cc-2017.csv.gza*` (10.6 GB, split into 2GB files)
-   - HTML: `html-2017.tar.gza*` (20.2 GB, split into 2GB files)
-   - Meta: `meta-2017.tar.gza*` (2.6 GB, split into 2GB files)
+**Record shape.** New runs write one JSON record per item and `to-parquet` builds a typed file with these columns:
 
-3. **917k Dataset from 2022:**
-   - CSV: `archive-cc-2022.csv.gza*` (12.6 GB, split into 2GB files)
-   - HTML: `html-2022.tar.gza*` (41.1 GB, split into 2GB files)
-   - Meta: `meta-2022.tar.gz` (2.1 GB)
+| Column | Type | Source |
+|---|---|---|
+| `identifier` | string | archive.org item id, e.g. `CNNW_20260910_050000_The_Story_Is_With_Elex_Michaelson` |
+| `title`, `contributor`, `description`, `language`, `runtime`, `closed_captioning` | string | item metadata; `contributor` is the station code |
+| `aired_date` | date | metadata `date` |
+| `publicdate` | string | when archive.org published the item |
+| `text` | string | caption snippets joined with a space |
+| `wordcount` | int32 | words in `text` |
+| `caption_empty` | bool | true when no caption text was extracted (see Coverage) |
+| `extra_json` | string | every other metadata field, as JSON |
+| `source` | string | input file the row came from |
 
-4. **179k Dataset from 2023:**
-   - CSV: `archive-cc-2023.csv.gz` (1.7 GB)
-   - HTML: `html-2023.tar.gza*` (7.3 GB, split into 2GB files)
-   - Meta: `meta-2023.tar.gz` (317 MB)
+### Coverage
 
-Please note that the file sizes and splitting information mentioned above are approximate.
+The `tvarchive` collection held 4,459,094 items on 2026-09-10 and grows by several thousand a day. The Dataverse runs cover 2009 to mid-2023. Two things to know before extending them:
+
+- **Captions appear with a delay.** An item published minutes ago shows about 30 empty caption placeholders; the text is filled in later. Rows with `caption_empty = true` can be re-fetched with `fetch --refresh`, then parsed into a rebuilt JSONL without `--resume`; empty captions do not prove a silent broadcast.
+- **The details page was the working public caption source in our checks.** Inspected items list caption files (`*.cc5.txt`, `*.align.srt`, `*.json`) but they are access-restricted: `/download/<id>/<id>.cc5.txt` returns 403 and `*.align.srt` returns an empty body. Scraping the 300 KB details page is not laziness; do not "optimize" it away.
+
+### How the data were collected
+
+Three steps, each a subcommand, each resumable:
+
+1. **identifiers** queries the archive.org search API for `collection:tvarchive`, optionally filtered by air date, publication date (`--since`, for incremental runs) or station, and writes one JSONL record per item. Pagination uses the scrape API's cursor via the `internetarchive` library, so a query matching millions of items streams rather than truncating at one page as the previous implementation did.
+2. **fetch** downloads each item's metadata (JSON API) to `data/meta/<id>_meta.json` and its details page to `data/html/<id>.html.gz`. Files are written atomically, so an interrupted run never leaves a truncated file that a later run would skip. Existing files are skipped; failures are appended to `data/fetch_failures.jsonl` and the run continues.
+3. **parse** extracts caption text from `div.snipin.nosel` snippets and flattens metadata into JSONL. `--resume` appends only new identifiers.
+
+The scripts that produced the four Dataverse runs used advancedsearch.php, `_meta.xml` files and a CSV writer; they are preserved at commit [`e78985d`](https://github.com/notnews/archive_news_cc/tree/e78985d). The 2026 rewrite fixed non-atomic downloads, a single-page search limit, and snippets joined without separators.
+
+An interrupted, unterminated final JSONL record is removed before resuming; complete records are preserved. A valid final record missing only its newline is retained. Malformed complete lines remain errors.
+
+### Usage
+
+```bash
+uv sync --group dev
+
+# Items published since a date (incremental), capped for a trial
+uv run archive-news-cc identifiers --since 2026-09-09 --limit 100 --out data/identifiers.jsonl
+
+# Or an air-date window for one station
+uv run archive-news-cc identifiers --contributor CNNW --start-date 2026-09-01 --end-date 2026-09-07
+
+uv run archive-news-cc fetch data/identifiers.jsonl --max-workers 2 --min-interval 1
+uv run archive-news-cc parse data/identifiers.jsonl --out data/captions.jsonl
+uv run archive-news-cc to-parquet data/captions.jsonl --out data/archive_news_cc.parquet
+uv run archive-news-cc upload data/archive_news_cc.parquet   # needs DATAVERSE_API_TOKEN
+```
+
+`fetch` and `parse` exit non-zero when any item failed or was missing, and list them, so a re-run can be targeted. Logs go to `data/archive_news_cc.log`.
+
+Development: `uv run ruff check . && uv run ruff format --check . && uv run pytest`, or `uv run pre-commit install` once.
+
+### Citation
+
+See [CITATION.cff](CITATION.cff). Cite the Dataverse DOI for the data and credit the Internet Archive.
 
 ### License
 
-We are releasing the scripts under the [MIT License](https://opensource.org/licenses/MIT).
-
-### Suggested Citation
-
-Please credit Internet Archive for the data.
-
-If you wanted to refer to this particular corpus so that the research is reproducible, you can cite it as:
-
-```text
-archive.org TV News Closed Caption Corpus. Laohaprapanon, Suriyan and Gaurav Sood. 2017. https://github.com/notnews/archive_news_cc/
-```
+Code is MIT. Captions and metadata are the Internet Archive's and the broadcasters'.
 
 ## Adjacent Repositories
 
