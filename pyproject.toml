@@ -42,7 +42,6 @@ module-name = "archive_news_cc"
 [dependency-groups]
 dev = [
     "ruff>=0.14",
-    "pre-commit>=4",
     { include-group = "test" },
 ]
 test = ["pytest>=8"]
